@@ -7,48 +7,11 @@ if (!isset($_SESSION['student_id'])) {
 }
 
 $student_id = $_SESSION['student_id'];
-$current_session = '2024/2025';
-$current_semester = 'First';
 
-// Handle course registration
-if ($_POST && isset($_POST['register_courses'])) {
-    $selected_courses = $_POST['courses'] ?? [];
-    
-    foreach ($selected_courses as $course_id) {
-        // Check if already registered
-        $stmt = $pdo->prepare("SELECT id FROM course_registrations WHERE student_id = ? AND course_id = ? AND session = ? AND semester = ?");
-        $stmt->execute([$student_id, $course_id, $current_session, $current_semester]);
-        
-        if (!$stmt->fetch()) {
-            $stmt = $pdo->prepare("INSERT INTO course_registrations (student_id, course_id, session, semester) VALUES (?, ?, ?, ?)");
-            $stmt->execute([$student_id, $course_id, $current_session, $current_semester]);
-        }
-    }
-    
-    echo '<div class="alert alert-success">Courses registered successfully!</div>';
-}
-
-// Handle course drop
-if ($_POST && isset($_POST['drop_course'])) {
-    $course_id = $_POST['course_id'];
-    $stmt = $pdo->prepare("DELETE FROM course_registrations WHERE student_id = ? AND course_id = ? AND session = ? AND semester = ?");
-    $stmt->execute([$student_id, $course_id, $current_session, $current_semester]);
-    echo '<div class="alert alert-info">Course dropped successfully!</div>';
-}
-
-// Get available courses
-$stmt = $pdo->query("SELECT * FROM courses ORDER BY level, course_code");
-$available_courses = $stmt->fetchAll();
-
-// Get registered courses
-$stmt = $pdo->prepare("
-    SELECT c.*, cr.id as reg_id 
-    FROM courses c 
-    JOIN course_registrations cr ON c.id = cr.course_id 
-    WHERE cr.student_id = ? AND cr.session = ? AND cr.semester = ?
-");
-$stmt->execute([$student_id, $current_session, $current_semester]);
-$registered_courses = $stmt->fetchAll();
+// Get student info
+$stmt = $pdo->prepare("SELECT * FROM students WHERE id = ?");
+$stmt->execute([$student_id]);
+$student = $stmt->fetch();
 ?>
 
 <!DOCTYPE html>
@@ -85,132 +48,106 @@ $registered_courses = $stmt->fetchAll();
 
             <!-- Main Content -->
             <div class="col-md-9">
-                <h3>Course Registration - <?php echo $current_semester; ?> Semester <?php echo $current_session; ?></h3>
+                <h3>Course Registration</h3>
                 
-                <!-- Registered Courses -->
-                <div class="card mt-3">
-                    <div class="card-header">
-                        <h5>Registered Courses</h5>
+                <!-- Course Registration Disabled Notice -->
+                <div class="card mt-3 border-warning">
+                    <div class="card-header bg-warning text-dark">
+                        <h5 class="mb-0">
+                            <i class="fas fa-exclamation-triangle me-2"></i>Course Registration Currently Disabled
+                        </h5>
                     </div>
                     <div class="card-body">
-                        <?php if (empty($registered_courses)): ?>
-                            <p class="text-muted">No courses registered yet.</p>
-                        <?php else: ?>
-                            <div class="table-responsive">
-                                <table class="table table-striped">
-                                    <thead>
-                                        <tr>
-                                            <th>Course Code</th>
-                                            <th>Course Title</th>
-                                            <th>Credit Unit</th>
-                                            <th>Level</th>
-                                            <th>Action</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        <?php foreach ($registered_courses as $course): ?>
-                                        <tr>
-                                            <td><?php echo $course['course_code']; ?></td>
-                                            <td><?php echo $course['course_title']; ?></td>
-                                            <td><?php echo $course['credit_unit']; ?></td>
-                                            <td><?php echo $course['level']; ?></td>
-                                            <td>
-                                                <form method="POST" style="display:inline;">
-                                                    <input type="hidden" name="course_id" value="<?php echo $course['id']; ?>">
-                                                    <button type="submit" name="drop_course" class="btn btn-sm btn-danger" onclick="return confirm('Drop this course?')">Drop</button>
-                                                </form>
-                                            </td>
-                                        </tr>
-                                        <?php endforeach; ?>
-                                    </tbody>
-                                </table>
+                        <div class="row">
+                            <div class="col-md-8">
+                                <h6>Course registration is temporarily unavailable</h6>
+                                <p class="mb-3">
+                                    We are working on implementing an online payment system to enable course registration. 
+                                    This feature will be available once the payment integration is complete.
+                                </p>
+                                
+                                <h6>What you can do now:</h6>
+                                <ul>
+                                    <li>View your academic records and results</li>
+                                    <li>Update your profile information</li>
+                                    <li>Contact the administration for any course-related queries</li>
+                                </ul>
+
+                                <div class="mt-4">
+                                    <a href="academic_records.php" class="btn btn-success me-2">View Academic Records</a>
+                                    <a href="profile_settings.php" class="btn btn-info">Update Profile</a>
+                                </div>
                             </div>
-                            
-                            <div class="mt-3">
-                                <a href="?print=1" class="btn btn-primary" target="_blank">Print Registration Slip</a>
+                            <div class="col-md-4">
+                                <div class="card border-info">
+                                    <div class="card-body text-center">
+                                        <h6>Your Program</h6>
+                                        <p class="badge bg-info fs-6"><?php echo $student['program']; ?></p>
+                                        
+                                        <h6 class="mt-3">Assessment System</h6>
+                                        <?php if ($student['program'] == 'National Diploma'): ?>
+                                            <p class="badge bg-success">CGPA System</p>
+                                        <?php else: ?>
+                                            <p class="badge bg-primary">Grade-Only System</p>
+                                        <?php endif; ?>
+                                    </div>
+                                </div>
                             </div>
-                        <?php endif; ?>
+                        </div>
                     </div>
                 </div>
 
-                <!-- Available Courses -->
+                <!-- Future Features Preview -->
                 <div class="card mt-4">
                     <div class="card-header">
-                        <h5>Available Courses</h5>
+                        <h5>Coming Soon: Enhanced Course Registration</h5>
                     </div>
                     <div class="card-body">
-                        <form method="POST">
-                            <div class="table-responsive">
-                                <table class="table table-hover">
-                                    <thead>
-                                        <tr>
-                                            <th>Select</th>
-                                            <th>Course Code</th>
-                                            <th>Course Title</th>
-                                            <th>Credit Unit</th>
-                                            <th>Level</th>
-                                            <th>Semester</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        <?php 
-                                        $registered_ids = array_column($registered_courses, 'id');
-                                        foreach ($available_courses as $course): 
-                                            $is_registered = in_array($course['id'], $registered_ids);
-                                        ?>
-                                        <tr class="<?php echo $is_registered ? 'table-success' : ''; ?>">
-                                            <td>
-                                                <?php if (!$is_registered): ?>
-                                                    <input type="checkbox" name="courses[]" value="<?php echo $course['id']; ?>" class="form-check-input">
-                                                <?php else: ?>
-                                                    <span class="badge bg-success">Registered</span>
-                                                <?php endif; ?>
-                                            </td>
-                                            <td><?php echo $course['course_code']; ?></td>
-                                            <td><?php echo $course['course_title']; ?></td>
-                                            <td><?php echo $course['credit_unit']; ?></td>
-                                            <td><?php echo $course['level']; ?></td>
-                                            <td><?php echo $course['semester']; ?></td>
-                                        </tr>
-                                        <?php endforeach; ?>
-                                    </tbody>
-                                </table>
+                        <p>When the online payment system is implemented, you will be able to:</p>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <ul>
+                                    <li>Register for courses online</li>
+                                    <li>Make secure online payments</li>
+                                    <li>Print registration confirmation</li>
+                                    <li>View payment receipts</li>
+                                </ul>
                             </div>
-                            
-                            <button type="submit" name="register_courses" class="btn btn-success">Register Selected Courses</button>
-                        </form>
+                            <div class="col-md-6">
+                                <ul>
+                                    <li>Track registration status</li>
+                                    <li>Add/drop courses during registration period</li>
+                                    <li>View course schedules and timetables</li>
+                                    <li>Receive registration notifications</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Contact Information -->
+                <div class="card mt-4">
+                    <div class="card-header">
+                        <h5>Need Help?</h5>
+                    </div>
+                    <div class="card-body">
+                        <p>For course registration assistance, please contact:</p>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <p><strong>Academic Office:</strong><br>
+                                Email: academic@byscons.edu.ng<br>
+                                Phone: +234-XXX-XXX-XXXX</p>
+                            </div>
+                            <div class="col-md-6">
+                                <p><strong>Student Affairs:</strong><br>
+                                Email: students@byscons.edu.ng<br>
+                                Phone: +234-XXX-XXX-XXXX</p>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
         </div>
     </div>
-
-    <?php if (isset($_GET['print'])): ?>
-    <script>
-        window.onload = function() {
-            var printContent = `
-                <h2>BAYELSA STATE COLLEGE OF NURSING SCIENCES</h2>
-                <h3>Course Registration Slip</h3>
-                <p><strong>Student:</strong> <?php echo $_SESSION['student_name']; ?></p>
-                <p><strong>Matric No:</strong> <?php echo $_SESSION['matric_number']; ?></p>
-                <p><strong>Email:</strong> <?php echo $_SESSION['student_email']; ?></p>
-                <p><strong>Session:</strong> <?php echo $current_session; ?></p>
-                <p><strong>Semester:</strong> <?php echo $current_semester; ?></p>
-                <table border="1" style="width:100%; border-collapse:collapse;">
-                    <tr><th>Course Code</th><th>Course Title</th><th>Credit Unit</th></tr>
-                    <?php foreach ($registered_courses as $course): ?>
-                    <tr><td><?php echo $course['course_code']; ?></td><td><?php echo $course['course_title']; ?></td><td><?php echo $course['credit_unit']; ?></td></tr>
-                    <?php endforeach; ?>
-                </table>
-                <p>Date: ${new Date().toLocaleDateString()}</p>
-            `;
-            
-            var printWindow = window.open('', '_blank');
-            printWindow.document.write('<html><head><title>Registration Slip</title></head><body>' + printContent + '</body></html>');
-            printWindow.document.close();
-            printWindow.print();
-        };
-    </script>
-    <?php endif; ?>
 </body>
 </html>

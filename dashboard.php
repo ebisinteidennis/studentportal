@@ -7,23 +7,35 @@ if (!isset($_SESSION['student_id'])) {
 }
 
 $student_id = $_SESSION['student_id'];
-$gpa = calculateGPA($student_id, $pdo);
 
 // Get student info
 $stmt = $pdo->prepare("SELECT * FROM students WHERE id = ?");
 $stmt->execute([$student_id]);
 $student = $stmt->fetch();
 
-// Get semester results for GPA trend
-$stmt = $pdo->prepare("
-    SELECT semester, session, AVG(grade_point) as semester_gpa 
-    FROM results 
-    WHERE student_id = ? 
-    GROUP BY semester, session 
-    ORDER BY session, semester
-");
-$stmt->execute([$student_id]);
-$gpa_trend = $stmt->fetchAll();
+// Check if student is in National Diploma program (for GPA calculation)
+$show_gpa = ($student['program'] == 'National Diploma');
+
+$gpa = null;
+$cgpa = null;
+if ($show_gpa) {
+    $gpa = calculateGPA($student_id, $pdo);
+    $cgpa = calculateCGPA($student_id, $pdo);
+}
+
+// Get semester results for GPA trend (only for ND)
+$gpa_trend = [];
+if ($show_gpa) {
+    $stmt = $pdo->prepare("
+        SELECT semester, session, AVG(grade_point) as semester_gpa 
+        FROM results 
+        WHERE student_id = ? 
+        GROUP BY semester, session 
+        ORDER BY session, semester
+    ");
+    $stmt->execute([$student_id]);
+    $gpa_trend = $stmt->fetchAll();
+}
 ?>
 
 <!DOCTYPE html>
@@ -33,7 +45,9 @@ $gpa_trend = $stmt->fetchAll();
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Student Dashboard - BYSCONS</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <?php if ($show_gpa): ?>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <?php endif; ?>
 </head>
 <body class="bg-light">
     <!-- Navigation -->
@@ -61,12 +75,17 @@ $gpa_trend = $stmt->fetchAll();
                         <h5><?php echo $student['first_name'] . ' ' . $student['last_name']; ?></h5>
                         <p class="text-muted"><?php echo $student['matric_number']; ?></p>
                         <p class="text-muted"><?php echo $student['email']; ?></p>
+                        <p class="badge bg-info"><?php echo $student['program']; ?></p>
                     </div>
                 </div>
 
                 <div class="list-group mt-3">
                     <a href="dashboard.php" class="list-group-item list-group-item-action active">Dashboard</a>
-                    <a href="course_registration.php" class="list-group-item list-group-item-action">Course Registration</a>
+                    <!-- Course Registration Disabled -->
+                    <div class="list-group-item list-group-item-action disabled">
+                        Course Registration
+                        <small class="d-block text-muted">Disabled - Payment System Required</small>
+                    </div>
                     <a href="academic_records.php" class="list-group-item list-group-item-action">Academic Records</a>
                     <a href="profile_settings.php" class="list-group-item list-group-item-action">Profile Settings</a>
                 </div>
@@ -75,7 +94,8 @@ $gpa_trend = $stmt->fetchAll();
             <!-- Main Content -->
             <div class="col-md-9">
                 <div class="row">
-                    <!-- Quick Stats -->
+                    <!-- Show GPA only for National Diploma -->
+                    <?php if ($show_gpa): ?>
                     <div class="col-md-4">
                         <div class="card bg-primary text-white">
                             <div class="card-body">
@@ -87,22 +107,32 @@ $gpa_trend = $stmt->fetchAll();
                     <div class="col-md-4">
                         <div class="card bg-success text-white">
                             <div class="card-body">
-                                <h4><?php echo count($gpa_trend); ?></h4>
-                                <p>Semesters Completed</p>
+                                <h4><?php echo $cgpa ?: '0.00'; ?></h4>
+                                <p>CGPA</p>
                             </div>
                         </div>
                     </div>
                     <div class="col-md-4">
                         <div class="card bg-info text-white">
                             <div class="card-body">
-                                <h4><?php echo $student['department']; ?></h4>
-                                <p>Department</p>
+                                <h4><?php echo count($gpa_trend); ?></h4>
+                                <p>Semesters</p>
                             </div>
                         </div>
                     </div>
+                    <?php else: ?>
+                    <!-- No GPA for other programs -->
+                    <div class="col-md-12">
+                        <div class="alert alert-info">
+                            <h5>Program: <?php echo $student['program']; ?></h5>
+                            <p>This program uses grade-only assessment. No GPA/CGPA calculation.</p>
+                        </div>
+                    </div>
+                    <?php endif; ?>
                 </div>
 
-                <!-- GPA Trend Chart -->
+                <?php if ($show_gpa && !empty($gpa_trend)): ?>
+                <!-- GPA Trend Chart (only for ND) -->
                 <div class="row mt-4">
                     <div class="col-12">
                         <div class="card">
@@ -115,6 +145,7 @@ $gpa_trend = $stmt->fetchAll();
                         </div>
                     </div>
                 </div>
+                <?php endif; ?>
 
                 <!-- Quick Links -->
                 <div class="row mt-4">
@@ -122,8 +153,8 @@ $gpa_trend = $stmt->fetchAll();
                         <div class="card text-center">
                             <div class="card-body">
                                 <h5>Course Registration</h5>
-                                <p>Register for courses</p>
-                                <a href="course_registration.php" class="btn btn-primary">Register</a>
+                                <p class="text-muted">Course registration is temporarily disabled. It will be enabled when online payment system is implemented.</p>
+                                <button class="btn btn-secondary" disabled>Coming Soon</button>
                             </div>
                         </div>
                     </div>
@@ -150,6 +181,7 @@ $gpa_trend = $stmt->fetchAll();
         </div>
     </div>
 
+    <?php if ($show_gpa && !empty($gpa_trend)): ?>
     <script>
         // GPA Trend Chart
         const ctx = document.getElementById('gpaChart').getContext('2d');
@@ -181,5 +213,6 @@ $gpa_trend = $stmt->fetchAll();
             }
         });
     </script>
+    <?php endif; ?>
 </body>
 </html>

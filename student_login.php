@@ -32,6 +32,7 @@
                                 $_SESSION['student_name'] = $student['first_name'] . ' ' . $student['last_name'];
                                 $_SESSION['student_email'] = $student['email'];
                                 $_SESSION['matric_number'] = $student['matric_number'];
+                                $_SESSION['student_program'] = $student['program'];
                                 header('Location: dashboard.php');
                                 exit;
                             } else {
@@ -53,8 +54,35 @@
                             <button type="submit" class="btn btn-primary w-100">Login</button>
                         </form>
                         
+                        <!-- Programs Information -->
+                        <div class="mt-4">
+                            <h6 class="text-center">Our Programs</h6>
+                            <div class="row text-center">
+                                <div class="col-4">
+                                    <small class="text-muted">
+                                        <strong>National Diploma</strong><br>
+                                        <span class="badge bg-success">CGPA System</span>
+                                    </small>
+                                </div>
+                                <div class="col-4">
+                                    <small class="text-muted">
+                                        <strong>Basic Midwifery</strong><br>
+                                        <span class="badge bg-info">Grade Only</span>
+                                    </small>
+                                </div>
+                                <div class="col-4">
+                                    <small class="text-muted">
+                                        <strong>General Nursing</strong><br>
+                                        <span class="badge bg-info">Grade Only</span>
+                                    </small>
+                                </div>
+                            </div>
+                        </div>
+                        
                         <div class="text-center mt-3">
-                            <a href="admin_login.php" class="text-secondary">Admin Login</a>
+                            <a href="student_registration.php" class="text-secondary">New Student? Register Here</a><br>
+                            <a href="admin_login.php" class="text-secondary">Admin Login</a> |
+                            <a href="index.php" class="text-secondary">Home</a>
                         </div>
                     </div>
                 </div>

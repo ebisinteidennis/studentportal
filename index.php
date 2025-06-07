@@ -1,6 +1,6 @@
 <?php
 // =====================================================
-// FILE: index.php
+// FILE: index.php - Enhanced
 // =====================================================
 ?>
 <!DOCTYPE html>
@@ -14,21 +14,60 @@
 <body class="bg-light">
     <div class="container mt-5">
         <div class="row justify-content-center">
-            <div class="col-md-8">
+            <div class="col-md-10">
                 <div class="card shadow">
                     <div class="card-header bg-primary text-white text-center">
-                        <img src="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjAiIGhlaWdodD0iNjAiIHZpZXdCb3g9IjAgMCA2MCA2MCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPGNpcmNsZSBjeD0iMzAiIGN5PSIzMCIgcj0iMjgiIHN0cm9rZT0id2hpdGUiIHN0cm9rZS13aWR0aD0iNCIvPgo8cGF0aCBkPSJNMTUgMjVIMzBIMzBIMzBIMzBINDVNMjAgMzVIMzVNMjUgNDVIMzUiIHN0cm9rZT0id2hpdGUiIHN0cm9rZS13aWR0aD0iMiIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIi8+CjwvcGF0aD4KPC9zdmc+" alt="BYSCONS Logo" class="mb-2">
+                        <img src="https://byscons.edu.ng/wp-content/uploads/2024/10/1715410211226-removebg-preview.png" alt="BYSCONS Logo" class="mb-2">
                         <h2>BAYELSA STATE COLLEGE OF NURSING SCIENCES</h2>
                         <p class="lead">Student Portal System</p>
                     </div>
-                    <div class="card-body text-center">
+                    <div class="card-body">
+                        <!-- Programs Information -->
+                        <div class="row mb-4">
+                            <div class="col-12">
+                                <h4 class="text-center mb-4">Our Academic Programs</h4>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="card border-primary h-100">
+                                    <div class="card-body text-center">
+                                        <h5 class="text-primary">National Diploma</h5>
+                                        <p class="text-muted">Professional nursing program</p>
+                                        <span class="badge bg-success">CGPA System</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="card border-success h-100">
+                                    <div class="card-body text-center">
+                                        <h5 class="text-success">School of Basic Midwifery</h5>
+                                        <p class="text-muted">Specialized midwifery training</p>
+                                        <span class="badge bg-info">Grade Only</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="card border-info h-100">
+                                    <div class="card-body text-center">
+                                        <h5 class="text-info">School of General Nursing</h5>
+                                        <p class="text-muted">General nursing practice</p>
+                                        <span class="badge bg-info">Grade Only</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
                         <div class="row">
                             <div class="col-md-6">
                                 <div class="card h-100">
                                     <div class="card-body">
                                         <h4 class="text-primary">Students</h4>
                                         <p>Access your academic records, register for courses, and manage your profile using your email address.</p>
-                                        <a href="student_login.php" class="btn btn-primary btn-lg">Student Login</a>
+                                        <div class="d-grid gap-2">
+                                            <a href="student_login.php" class="btn btn-primary btn-lg">Student Login</a>
+                                            <a href="student_registration.php" class="btn btn-outline-primary">New Student Registration</a>
+                                        </div>
+                                        <hr>
+                                        <small class="text-muted">Default Password: student123</small>
                                     </div>
                                 </div>
                             </div>
@@ -38,6 +77,13 @@
                                         <h4 class="text-danger">Administrators</h4>
                                         <p>Manage student records, upload results, and oversee the portal system.</p>
                                         <a href="admin_login.php" class="btn btn-danger btn-lg">Admin Login</a>
+                                        <hr>
+                                        <small class="text-muted">
+                                            Program-specific admin access:<br>
+                                            • nd_admin (National Diploma)<br>
+                                            • sbm_admin (Basic Midwifery)<br>
+                                            • sgn_admin (General Nursing)
+                                        </small>
                                     </div>
                                 </div>
                             </div>
@@ -52,6 +98,7 @@
                                             <strong>📚</strong>
                                         </div>
                                         <h6 class="mt-2">Course Registration</h6>
+                                        <small class="text-muted">Currently disabled - payment system required</small>
                                     </div>
                                 </div>
                                 <div class="col-md-3">
@@ -60,6 +107,7 @@
                                             <strong>📊</strong>
                                         </div>
                                         <h6 class="mt-2">Academic Records</h6>
+                                        <small class="text-muted">Program-specific GPA calculation</small>
                                     </div>
                                 </div>
                                 <div class="col-md-3">
@@ -68,6 +116,7 @@
                                             <strong>👤</strong>
                                         </div>
                                         <h6 class="mt-2">Profile Management</h6>
+                                        <small class="text-muted">Complete student information</small>
                                     </div>
                                 </div>
                                 <div class="col-md-3">
@@ -75,7 +124,8 @@
                                         <div class="bg-warning text-white rounded-circle d-inline-flex align-items-center justify-content-center" style="width: 60px; height: 60px;">
                                             <strong>📈</strong>
                                         </div>
-                                        <h6 class="mt-2">GPA Tracking</h6>
+                                        <h6 class="mt-2">Session Management</h6>
+                                        <small class="text-muted">Academic session organization</small>
                                     </div>
                                 </div>
                             </div>
